@@ -19,25 +19,43 @@ game_over = 0
 #Képek
 bg_img = pygame.image.load("haller.png")
 valami_img = pygame.image.load("gergo.png")
+restart_img = pygame.transform.scale(pygame.image.load("reset.png"), (tile_size * 3, tile_size))
 
+# img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
+class Button():
+    def __init__(self, x, y, image):
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.clicked = False
 
+    def draw(self):
 
+        action = False
 
+        #egér pozíció
+        pos = pygame.mouse.get_pos()
+
+        if self.rect.collidepoint(pos):
+            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+                action = True
+                self.clicked = True
+        
+        if pygame.mouse.get_pressed()[0] == 0:
+            self.clicked = False
+        
+        #gomb
+        screen.blit(self.image, self.rect)
+
+        return action
 
 
 
 class Player():
     def __init__(self, x, y):
-        img = pygame.image.load('avatar.png')
-        self.image = pygame.transform.scale(img,(50,75))
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
-        self.vel_y = 0
-        self.jumped = False
-        self.dead_image = pygame.image.load('ghost.jpg')
+        self.reset(x, y)
+    
     def update(self, game_over):
         
         dx = 0
@@ -47,7 +65,7 @@ class Player():
          
         #billentyűk
             key = pygame.key.get_pressed()
-            if key[pygame.K_SPACE] and self.jumped == False:
+            if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False:
                 self.vel_y = -15
                 self.jumped = True
             if key[pygame.K_SPACE] == False:
@@ -64,6 +82,9 @@ class Player():
             dy += self.vel_y
 
             #hitbox
+            
+            self.in_air = True
+
             for tile in world.tile_list:
                 if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
                     dx = 0
@@ -75,6 +96,8 @@ class Player():
                         self.vel_y = 0
                     elif self.vel_y >= 0:
                         dy = tile[1].top - self.rect.bottom
+                        self.vel_y = 0
+                        self.in_air = False
 
 
             #enemy hitbox
@@ -104,7 +127,20 @@ class Player():
         pygame.draw.rect(screen, (255,255,255), self.rect, 2)
 
 
-        return game_over 
+        return game_over
+
+    def reset(self, x, y):
+        img = pygame.image.load('avatar.png')
+        self.image = pygame.transform.scale(img,(50,75))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.vel_y = 0
+        self.jumped = False
+        self.dead_image = pygame.image.load('ghost.jpg')
+        self.in_air = True
 
 
 
@@ -152,7 +188,10 @@ class World():
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, x, y):
 		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load('blob.png')
+		self.image = pygame.transform.scale(pygame.image.load('blob.png'), (tile_size, tile_size))
+
+# img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
+
 		self.rect = self.image.get_rect()
 		self.rect.x = x
 		self.rect.y = y
@@ -188,10 +227,10 @@ world_data = [
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0,0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0,0, 1],
-    [1, 0, 0, 0, 0, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,0, 1],
-    [1, 0, 0, 6, 6, 6, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0,0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 6, 6, 1, 0,0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,0, 1],
     [1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,0, 1],
     [1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,0, 1],
@@ -199,9 +238,15 @@ world_data = [
 ]
 
 player = Player(100, screen_height - 130)
+
 blob_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
+
 world = World(world_data)
+
+#gomb
+restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
+
 run = True
 while run:
     
@@ -217,9 +262,14 @@ while run:
 
     blob_group.draw(screen)
     lava_group.draw(screen)
+
     game_over = player.update(game_over)
 
-    print(world.tile_list)
+    if game_over == -1:
+        if restart_button.draw():
+            player.reset(100, screen_height - 130)
+            game_over = 0
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
