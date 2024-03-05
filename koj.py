@@ -15,11 +15,14 @@ pygame.display.set_caption("KÖRNYEZETVÉDELMI OKTATÓ JÁTÉK")
 #Változók
 tile_size = 50
 game_over = 0
+main_menu = True
 
 #Képek
 bg_img = pygame.image.load("haller.png")
 valami_img = pygame.image.load("gergo.png")
 restart_img = pygame.transform.scale(pygame.image.load("reset.png"), (tile_size * 3, tile_size))
+start_img = pygame.transform.scale(pygame.image.load("start.png"), (tile_size * 5, tile_size * 3))
+exit_img = pygame.transform.scale(pygame.image.load("exit.jpg"), (tile_size * 5, tile_size * 3))
 
 # img = pygame.transform.scale(dirt_img, (tile_size, tile_size))
 class Button():
@@ -246,6 +249,8 @@ world = World(world_data)
 
 #gomb
 restart_button = Button(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
+start_button = Button(screen_width // 2 - 350, screen_height // 2, start_img)
+exit_button = Button(screen_width // 2 + 150, screen_height // 2, exit_img)
 
 run = True
 while run:
@@ -255,20 +260,28 @@ while run:
     screen.blit(bg_img, (0, 0))
     screen.blit(valami_img, (100, 100))
 
-    world.draw()
+    if main_menu == True:
+        if exit_button.draw():
+            run = False
 
-    if game_over == 0:
-        blob_group.update()
+        if start_button.draw():
+            main_menu = False
 
-    blob_group.draw(screen)
-    lava_group.draw(screen)
+    else:
+        world.draw()
 
-    game_over = player.update(game_over)
+        if game_over == 0:
+            blob_group.update()
 
-    if game_over == -1:
-        if restart_button.draw():
-            player.reset(100, screen_height - 130)
-            game_over = 0
+        blob_group.draw(screen)
+        lava_group.draw(screen)
+
+        game_over = player.update(game_over)
+
+        if game_over == -1:
+            if restart_button.draw():
+                player.reset(100, screen_height - 130)
+                game_over = 0
 
 
     for event in pygame.event.get():
